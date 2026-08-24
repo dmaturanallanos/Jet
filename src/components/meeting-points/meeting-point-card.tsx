@@ -1,0 +1,48 @@
+import Link from "next/link";
+import { ExternalLink, MapPin } from "lucide-react";
+import { MeetingPointStatusBadge } from "@/components/common/badges";
+import type { MeetingPointStatus } from "@/types/domain";
+
+export type MeetingPointCardData = {
+  id: string;
+  name: string;
+  address: string;
+  status: MeetingPointStatus;
+  pendingTasks: number;
+  urgentTasks: number;
+  updatedBy: string;
+  imageUrl?: string | null;
+};
+
+export function MeetingPointCard({ point }: { point: MeetingPointCardData }) {
+  return (
+    <article className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <div
+        className="aspect-[16/9] bg-slate-200 bg-cover bg-center dark:bg-zinc-800"
+        style={point.imageUrl ? { backgroundImage: `url(${point.imageUrl})` } : undefined}
+      />
+      <div className="grid gap-3 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">{point.name}</h2>
+            <p className="mt-1 flex items-center text-sm text-slate-500 dark:text-zinc-400">
+              <MapPin className="mr-1 size-4" />
+              {point.address}
+            </p>
+          </div>
+          <MeetingPointStatusBadge status={point.status} />
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <span className="rounded-lg bg-slate-100 p-2 dark:bg-white/5">{point.pendingTasks} pendientes</span>
+          <span className="rounded-lg bg-slate-100 p-2 dark:bg-white/5">{point.urgentTasks} urgentes</span>
+        </div>
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
+          <span>Actualizado por {point.updatedBy}</span>
+          <Link href={`/points/${point.id}`} className="inline-flex items-center font-semibold text-cyan-600 dark:text-cyan-300">
+            Ver <ExternalLink className="ml-1 size-3" />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
