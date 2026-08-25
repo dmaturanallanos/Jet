@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import { PriorityBadge, TaskStatusBadge } from "@/components/common/badges";
 import type { TaskPriority, TaskStatus } from "@/types/domain";
@@ -31,6 +32,9 @@ export function TaskCard({ task }: { task: TaskCardData }) {
         <span>Responsable: {task.assignedTo}</span>
         {task.dueDate ? <span className="inline-flex items-center"><CalendarClock className="mr-1 size-4" />{new Date(task.dueDate).toLocaleString("es-CL")}</span> : null}
       </div>
+      <Link href={`/tasks/${task.id}`} className="mt-4 inline-flex h-9 items-center rounded-lg border border-black/10 px-3 text-sm font-semibold dark:border-white/10">
+        Abrir tarea
+      </Link>
     </article>
   );
 }

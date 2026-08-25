@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getCurrentProfile } from "@/lib/auth/current-profile";
+import { canManageOperations, getCurrentProfile } from "@/lib/auth/current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { meetingPointSchema } from "@/schemas/meeting-point";
 import { parseMapsLink, slugify } from "@/utils/geo";
@@ -13,14 +13,15 @@ export type PointFormState = {
 
 export async function createMeetingPoint(_state: PointFormState, formData: FormData): Promise<PointFormState> {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "admin") {
-    return { error: "Solo un administrador puede crear Puntos Jet." };
+  if (!profile || !canManageOperations(profile.role)) {
+    return { error: "Solo administradores o moderadores pueden crear Puntos Jet." };
   }
 
+  const locationInput = normalizeLocationInput(formData);
   const parsed = meetingPointSchema.safeParse({
     name: formData.get("name"),
-    address: formData.get("address"),
-    mapsLink: formData.get("mapsLink"),
+    address: locationInput.address,
+    mapsLink: locationInput.mapsLink,
     latitude: formData.get("latitude") || undefined,
     longitude: formData.get("longitude") || undefined,
     reference: formData.get("reference"),
@@ -47,7 +48,8 @@ export async function createMeetingPoint(_state: PointFormState, formData: FormD
       organization_id: profile.organization_id,
       name: parsed.data.name,
       slug,
-      address: parsed.data.address || parsed.data.mapsLink || "Sin direccion",
+      address: parsed.data.address || "Ubicacion desde Google Maps",
+      maps_url: parsed.data.mapsLink || null,
       latitude,
       longitude,
       reference: parsed.data.reference || null,
@@ -79,6 +81,72 @@ export async function createMeetingPoint(_state: PointFormState, formData: FormD
 
   revalidatePath("/points");
   redirect(`/points/${point.id}`);
+}
+
+export async function updateMeetingPoint(_state: PointFormState, formData: FormData): Promise<PointFormState> {
+  const profile = await getCurrentProfile();
+  if (!profile || !canManageOperations(profile.role)) {
+    return { error: "Solo administradores o moderadores pueden editar Puntos Jet." };
+  }
+
+  const pointId = String(formData.get("pointId") ?? "");
+  if (!pointId) return { error: "Punto no encontrado." };
+
+  const locationInput = normalizeLocationInput(formData);
+  const parsed = meetingPointSchema.safeParse({
+    name: formData.get("name"),
+    address: locationInput.address,
+    mapsLink: locationInput.mapsLink,
+    latitude: formData.get("latitude") || undefined,
+    longitude: formData.get("longitude") || undefined,
+    reference: formData.get("reference"),
+    description: formData.get("description"),
+    status: formData.get("status"),
+    internalNotes: formData.get("internalNotes"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Revisa los datos del punto." };
+  }
+
+  const mapsCoords = parsed.data.mapsLink ? parseMapsLink(parsed.data.mapsLink) : null;
+  const latitude = parsed.data.latitude === "" || parsed.data.latitude === undefined ? mapsCoords?.latitude ?? null : Number(parsed.data.latitude);
+  const longitude = parsed.data.longitude === "" || parsed.data.longitude === undefined ? mapsCoords?.longitude ?? null : Number(parsed.data.longitude);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("meeting_points")
+    .update({
+      name: parsed.data.name,
+      address: parsed.data.address || "Ubicacion desde Google Maps",
+      maps_url: parsed.data.mapsLink || null,
+      latitude,
+      longitude,
+      reference: parsed.data.reference || null,
+      description: parsed.data.description || null,
+      status: parsed.data.status,
+      internal_notes: parsed.data.internalNotes || null,
+      updated_by: profile.id,
+    })
+    .eq("id", pointId)
+    .eq("organization_id", profile.organization_id);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("activity_logs").insert({
+    organization_id: profile.organization_id,
+    user_id: profile.id,
+    meeting_point_id: pointId,
+    action_type: "meeting_point_updated",
+    entity_type: "meeting_point",
+    entity_id: pointId,
+    title: "Punto Jet actualizado",
+    description: parsed.data.name,
+  });
+
+  revalidatePath("/points");
+  revalidatePath(`/points/${pointId}`);
+  redirect(`/points/${pointId}`);
 }
 
 export async function uploadReferenceImage(_state: PointFormState, formData: FormData): Promise<PointFormState> {
@@ -149,4 +217,26 @@ async function uploadPointImage(
   });
 
   return null;
+}
+
+function normalizeLocationInput(formData: FormData) {
+  const address = String(formData.get("address") ?? "").trim();
+  const mapsLink = String(formData.get("mapsLink") ?? "").trim();
+
+  if (!mapsLink && isLikelyMapsUrl(address)) {
+    return { address: "", mapsLink: address };
+  }
+
+  return { address, mapsLink };
+}
+
+function isLikelyMapsUrl(value: string) {
+  if (!/^https?:\/\//i.test(value)) return false;
+
+  try {
+    const host = new URL(value).hostname.toLowerCase();
+    return host.includes("google.") || host === "maps.app.goo.gl" || host.endsWith(".maps.app.goo.gl");
+  } catch {
+    return false;
+  }
 }

@@ -15,7 +15,15 @@ type PointOption = {
 
 const initialState: CreateTaskState = {};
 
-export function CreateTaskForm({ points, assignees }: { points: PointOption[]; assignees: Assignee[] }) {
+export function CreateTaskForm({
+  points,
+  assignees,
+  selectedPointId = "",
+}: {
+  points: PointOption[];
+  assignees: Assignee[];
+  selectedPointId?: string;
+}) {
   const [state, action, pending] = useActionState(createTask, initialState);
 
   return (
@@ -29,7 +37,7 @@ export function CreateTaskForm({ points, assignees }: { points: PointOption[]; a
           <option value="high">Alta</option>
           <option value="urgent">Urgente</option>
         </select>
-        <select name="meetingPointId" defaultValue="" className="Input">
+        <select name="meetingPointId" defaultValue={selectedPointId} className="Input">
           <option value="">Tarea general</option>
           {points.map((point) => <option key={point.id} value={point.id}>{point.name}</option>)}
         </select>

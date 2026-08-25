@@ -2,9 +2,12 @@ create extension if not exists pgcrypto;
 
 do $$
 begin
-  create type public.profile_role as enum ('admin', 'operator');
+  create type public.profile_role as enum ('admin', 'operator', 'moderator', 'scout');
 exception when duplicate_object then null;
 end $$;
+
+alter type public.profile_role add value if not exists 'moderator';
+alter type public.profile_role add value if not exists 'scout';
 
 do $$
 begin
@@ -33,6 +36,12 @@ end $$;
 do $$
 begin
   create type public.notification_status as enum ('unread', 'read', 'archived');
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  create type public.shift_status as enum ('scheduled', 'active', 'completed', 'cancelled');
 exception when duplicate_object then null;
 end $$;
 
@@ -65,6 +74,7 @@ create table if not exists public.meeting_points (
   name text not null,
   slug text not null,
   address text not null,
+  maps_url text,
   latitude numeric(9,6) check (latitude >= -90 and latitude <= 90),
   longitude numeric(9,6) check (longitude >= -180 and longitude <= 180),
   reference text,
@@ -79,6 +89,9 @@ create table if not exists public.meeting_points (
   deleted_at timestamptz,
   unique (organization_id, slug)
 );
+
+alter table public.meeting_points
+  add column if not exists maps_url text;
 
 alter table public.meeting_points
   alter column latitude drop not null,
@@ -209,6 +222,22 @@ create table if not exists public.notifications (
   read_at timestamptz
 );
 
+create table if not exists public.shifts (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete restrict,
+  meeting_point_id uuid references public.meeting_points(id) on delete set null,
+  assigned_to uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  notes text,
+  status public.shift_status not null default 'scheduled',
+  starts_at timestamptz not null,
+  ends_at timestamptz not null,
+  created_by uuid references public.profiles(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (ends_at > starts_at)
+);
+
 create or replace function public.set_updated_at()
 returns trigger language plpgsql as $$
 begin
@@ -229,6 +258,8 @@ drop trigger if exists task_comments_set_updated_at on public.task_comments;
 create trigger task_comments_set_updated_at before update on public.task_comments for each row execute function public.set_updated_at();
 drop trigger if exists reports_set_updated_at on public.reports;
 create trigger reports_set_updated_at before update on public.reports for each row execute function public.set_updated_at();
+drop trigger if exists shifts_set_updated_at on public.shifts;
+create trigger shifts_set_updated_at before update on public.shifts for each row execute function public.set_updated_at();
 
 create or replace function public.current_organization_id()
 returns uuid language sql stable security definer set search_path = public as $$
@@ -242,7 +273,12 @@ $$;
 
 create or replace function public.is_admin()
 returns boolean language sql stable security definer set search_path = public as $$
-  select coalesce(public.current_role() = 'admin', false);
+  select coalesce(public.current_role()::text = 'admin', false);
+$$;
+
+create or replace function public.can_manage_operations()
+returns boolean language sql stable security definer set search_path = public as $$
+  select coalesce(public.current_role()::text in ('admin', 'moderator'), false);
 $$;
 
 alter table public.organizations enable row level security;
@@ -257,6 +293,7 @@ alter table public.report_images enable row level security;
 alter table public.activity_logs enable row level security;
 alter table public.meeting_point_history enable row level security;
 alter table public.notifications enable row level security;
+alter table public.shifts enable row level security;
 
 drop policy if exists "members can read their organization" on public.organizations;
 create policy "members can read their organization" on public.organizations for select using (id = public.current_organization_id());
@@ -265,16 +302,16 @@ create policy "members can read profiles in organization" on public.profiles for
 drop policy if exists "users can update their own profile basics" on public.profiles;
 create policy "users can update their own profile basics" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid() and organization_id = public.current_organization_id());
 drop policy if exists "admins can update organization profiles" on public.profiles;
-create policy "admins can update organization profiles" on public.profiles for update using (organization_id = public.current_organization_id() and public.is_admin()) with check (organization_id = public.current_organization_id() and public.is_admin());
+create policy "admins can update organization profiles" on public.profiles for update using (organization_id = public.current_organization_id() and public.can_manage_operations()) with check (organization_id = public.current_organization_id() and public.can_manage_operations());
 drop policy if exists "admins can insert profiles in organization" on public.profiles;
-create policy "admins can insert profiles in organization" on public.profiles for insert with check (organization_id = public.current_organization_id() and public.is_admin());
+create policy "admins can insert profiles in organization" on public.profiles for insert with check (organization_id = public.current_organization_id() and public.can_manage_operations());
 
 drop policy if exists "members can read meeting points" on public.meeting_points;
 create policy "members can read meeting points" on public.meeting_points for select using (organization_id = public.current_organization_id());
 drop policy if exists "admins can insert meeting points" on public.meeting_points;
-create policy "admins can insert meeting points" on public.meeting_points for insert with check (organization_id = public.current_organization_id() and public.is_admin());
+create policy "admins can insert meeting points" on public.meeting_points for insert with check (organization_id = public.current_organization_id() and public.can_manage_operations());
 drop policy if exists "admins can update meeting points" on public.meeting_points;
-create policy "admins can update meeting points" on public.meeting_points for update using (organization_id = public.current_organization_id() and public.is_admin()) with check (organization_id = public.current_organization_id() and public.is_admin());
+create policy "admins can update meeting points" on public.meeting_points for update using (organization_id = public.current_organization_id() and public.can_manage_operations()) with check (organization_id = public.current_organization_id() and public.can_manage_operations());
 
 drop policy if exists "members can read meeting point images" on public.meeting_point_images;
 create policy "members can read meeting point images" on public.meeting_point_images for select using (organization_id = public.current_organization_id());
@@ -286,9 +323,9 @@ create policy "admins can update meeting point images" on public.meeting_point_i
 drop policy if exists "members can read tasks" on public.tasks;
 create policy "members can read tasks" on public.tasks for select using (organization_id = public.current_organization_id());
 drop policy if exists "admins can insert tasks" on public.tasks;
-create policy "admins can insert tasks" on public.tasks for insert with check (organization_id = public.current_organization_id() and public.is_admin());
+create policy "admins can insert tasks" on public.tasks for insert with check (organization_id = public.current_organization_id() and public.can_manage_operations());
 drop policy if exists "admins can update tasks" on public.tasks;
-create policy "admins can update tasks" on public.tasks for update using (organization_id = public.current_organization_id() and public.is_admin()) with check (organization_id = public.current_organization_id() and public.is_admin());
+create policy "admins can update tasks" on public.tasks for update using (organization_id = public.current_organization_id() and public.can_manage_operations()) with check (organization_id = public.current_organization_id() and public.can_manage_operations());
 drop policy if exists "operators can update assigned tasks" on public.tasks;
 create policy "operators can update assigned tasks" on public.tasks for update using (organization_id = public.current_organization_id() and assigned_to = auth.uid()) with check (organization_id = public.current_organization_id() and assigned_to = auth.uid());
 
@@ -325,6 +362,13 @@ create policy "users can read their notifications" on public.notifications for s
 drop policy if exists "users can update their notifications" on public.notifications;
 create policy "users can update their notifications" on public.notifications for update using (organization_id = public.current_organization_id() and user_id = auth.uid()) with check (organization_id = public.current_organization_id() and user_id = auth.uid());
 
+drop policy if exists "members can read shifts" on public.shifts;
+create policy "members can read shifts" on public.shifts for select using (organization_id = public.current_organization_id());
+drop policy if exists "admins and moderators can insert shifts" on public.shifts;
+create policy "admins and moderators can insert shifts" on public.shifts for insert with check (organization_id = public.current_organization_id() and public.can_manage_operations());
+drop policy if exists "admins and moderators can update shifts" on public.shifts;
+create policy "admins and moderators can update shifts" on public.shifts for update using (organization_id = public.current_organization_id() and public.can_manage_operations()) with check (organization_id = public.current_organization_id() and public.can_manage_operations());
+
 create index if not exists profiles_organization_id_idx on public.profiles(organization_id);
 create index if not exists meeting_points_organization_status_idx on public.meeting_points(organization_id, status) where deleted_at is null;
 create index if not exists meeting_points_updated_at_idx on public.meeting_points(updated_at desc);
@@ -342,6 +386,9 @@ create index if not exists activity_logs_task_idx on public.activity_logs(task_i
 create index if not exists activity_logs_report_idx on public.activity_logs(report_id);
 create index if not exists meeting_point_history_point_idx on public.meeting_point_history(meeting_point_id, created_at desc);
 create index if not exists notifications_user_status_idx on public.notifications(user_id, status);
+create index if not exists shifts_organization_starts_at_idx on public.shifts(organization_id, starts_at);
+create index if not exists shifts_assigned_to_idx on public.shifts(assigned_to, starts_at);
+create index if not exists shifts_meeting_point_idx on public.shifts(meeting_point_id);
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('jet-operations', 'jet-operations', false, 8388608, array['image/jpeg', 'image/png', 'image/webp'])
@@ -514,10 +561,63 @@ create trigger tasks_assignment_notification
 after insert or update of assigned_to on public.tasks
 for each row execute function public.create_task_assignment_notification();
 
+create or replace function public.create_shift_assignment_notification()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if tg_op = 'INSERT' or old.assigned_to is distinct from new.assigned_to or old.starts_at is distinct from new.starts_at then
+    insert into public.notifications (organization_id, user_id, title, body, metadata)
+    values (
+      new.organization_id,
+      new.assigned_to,
+      'Turno asignado',
+      new.title || ' - ' || to_char(new.starts_at at time zone 'America/Santiago', 'DD/MM HH24:MI'),
+      jsonb_build_object('shift_id', new.id, 'meeting_point_id', new.meeting_point_id, 'starts_at', new.starts_at, 'ends_at', new.ends_at)
+    );
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists shifts_assignment_notification on public.shifts;
+create trigger shifts_assignment_notification
+after insert or update of assigned_to, starts_at on public.shifts
+for each row execute function public.create_shift_assignment_notification();
+
+create or replace function public.notify_team(
+  notification_title text,
+  notification_body text,
+  notification_metadata jsonb default '{}'::jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.can_manage_operations() then
+    raise exception 'forbidden';
+  end if;
+
+  insert into public.notifications (organization_id, user_id, title, body, metadata)
+  select public.current_organization_id(), p.id, notification_title, notification_body, notification_metadata
+  from public.profiles p
+  where p.organization_id = public.current_organization_id()
+    and p.status = 'active';
+end;
+$$;
+
+revoke execute on function public.notify_team(text, text, jsonb) from public;
+grant execute on function public.notify_team(text, text, jsonb) to authenticated;
+
 drop policy if exists "admins can insert notifications" on public.notifications;
 create policy "admins can insert notifications"
 on public.notifications for insert
 with check (
   organization_id = public.current_organization_id()
-  and public.is_admin()
+  and public.can_manage_operations()
 );

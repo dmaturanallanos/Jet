@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AppShell } from "@/components/app/app-shell";
 import { PageHeader } from "@/components/app/page-header";
@@ -30,7 +31,7 @@ export default async function ReportsPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Reportes manuales" description="Observaciones creadas explicitamente por usuarios, separadas de la actividad automatica." action={<button className="inline-flex h-11 items-center rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-zinc-950"><Plus className="mr-2 size-4" />Crear reporte</button>} />
+      <PageHeader title="Reportes manuales" description="Observaciones creadas explicitamente por usuarios, separadas de la actividad automatica." action={<Link href="/reports/new" className="inline-flex h-11 items-center rounded-lg bg-[#16c8ff] px-4 text-sm font-semibold text-[#07111f]"><Plus className="mr-2 size-4" />Crear reporte</Link>} />
       {reports.length ? <div className="grid gap-3">{reports.map((report) => <ReportCard key={report.id} report={report} />)}</div> : <EmptyState title="No hay reportes" description="Los reportes manuales creados por operadores apareceran aqui." />}
     </AppShell>
   );

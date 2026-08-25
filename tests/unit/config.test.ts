@@ -9,6 +9,6 @@ describe("central app config", () => {
   it("defines extensible operational values", () => {
     expect(meetingPointStatuses).toContain("review");
     expect(taskPriorities).toContain("urgent");
-    expect(profileRoles).toEqual(["admin", "operator"]);
+    expect(profileRoles).toEqual(["admin", "moderator", "scout"]);
   });
 });

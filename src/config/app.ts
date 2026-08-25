@@ -23,7 +23,7 @@ export const appConfig = {
 export const meetingPointStatuses = ["active", "inactive", "review", "temporary"] as const;
 export const taskPriorities = ["low", "medium", "high", "urgent"] as const;
 export const taskStatuses = ["pending", "in_progress", "completed", "cancelled"] as const;
-export const profileRoles = ["admin", "operator"] as const;
+export const profileRoles = ["admin", "moderator", "scout"] as const;
 
 export const imageLimits = {
   maxSizeMb: 8,

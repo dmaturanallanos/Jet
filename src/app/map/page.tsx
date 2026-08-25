@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { MapClient } from "@/components/meeting-points/map-client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
+import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type { MeetingPointStatus } from "@/types/domain";
 
 export default async function MapPage() {
@@ -24,7 +25,7 @@ export default async function MapPage() {
       .select("id, name, address, latitude, longitude, status, main_image_url")
       .is("deleted_at", null);
 
-    points = (data ?? []).map((point) => ({
+    points = (await Promise.all((data ?? []).map(async (point) => ({
       id: point.id,
       name: point.name,
       address: point.address,
@@ -32,8 +33,8 @@ export default async function MapPage() {
       longitude: Number(point.longitude),
       status: point.status as MeetingPointStatus,
       updatedBy: "Sistema",
-      imageUrl: point.main_image_url,
-    })).filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
+      imageUrl: await createSignedStorageUrl(point.main_image_url),
+    })))).filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
   }
 
   return (

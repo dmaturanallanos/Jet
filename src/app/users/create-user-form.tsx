@@ -17,8 +17,9 @@ export function CreateUserForm() {
         <input name="email" required type="email" placeholder="correo@jetscooter.cl" className="Input" />
         <input name="password" required type="password" minLength={8} placeholder="Contrasena inicial" className="Input" />
         <input name="phone" placeholder="Telefono" className="Input" />
-        <select name="role" required defaultValue="operator" className="Input">
-          <option value="operator">Operador</option>
+        <select name="role" required defaultValue="scout" className="Input">
+          <option value="scout">Scout</option>
+          <option value="moderator">Moderador</option>
           <option value="admin">Administrador</option>
         </select>
       </div>

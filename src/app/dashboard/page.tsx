@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/common/states";
 import { TaskCard, type TaskCardData } from "@/components/tasks/task-card";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type { MeetingPointStatus, TaskPriority, TaskStatus } from "@/types/domain";
 
 type DailySummaryRow = {
@@ -112,7 +113,7 @@ export default async function DashboardPage() {
         longitude: Number(point.longitude),
         status: point.status as MeetingPointStatus,
         updatedBy: "Sistema",
-        imageUrl: point.main_image_url,
+        imageUrl: await createSignedStorageUrl(point.main_image_url),
       };
     }
   }

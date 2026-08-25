@@ -17,3 +17,9 @@ export type Profile = {
   role: ProfileRole;
   status: "active" | "inactive";
 };
+
+export const roleLabels: Record<ProfileRole, string> = {
+  admin: "Administrador",
+  moderator: "Moderador",
+  scout: "Scout",
+};

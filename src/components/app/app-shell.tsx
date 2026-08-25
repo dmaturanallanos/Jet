@@ -8,6 +8,7 @@ import {
   MapPin,
   MoreHorizontal,
   Settings,
+  CalendarDays,
   User,
   Users,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const primaryNav = [
   { href: "/points", label: "Puntos", icon: MapPin },
   { href: "/tasks", label: "Tareas", icon: ClipboardList },
   { href: "/reports", label: "Reportes", icon: FileText },
+  { href: "/shifts", label: "Turnos", icon: CalendarDays },
   { href: "/users", label: "Usuarios", icon: Users },
   { href: "/settings", label: "Config", icon: Settings },
 ];

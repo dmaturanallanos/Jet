@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getCurrentProfile } from "@/lib/auth/current-profile";
+import { canManageOperations, getCurrentProfile } from "@/lib/auth/current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { createTaskSchema } from "@/schemas/tasks";
 
@@ -13,8 +13,8 @@ export type CreateTaskState = {
 export async function createTask(_state: CreateTaskState, formData: FormData): Promise<CreateTaskState> {
   const currentProfile = await getCurrentProfile();
 
-  if (!currentProfile || currentProfile.role !== "admin") {
-    return { error: "Solo un administrador puede crear y asignar tareas." };
+  if (!currentProfile || !canManageOperations(currentProfile.role)) {
+    return { error: "Solo administradores o moderadores pueden crear y asignar tareas." };
   }
 
   const parsed = createTaskSchema.safeParse({

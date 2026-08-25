@@ -26,7 +26,7 @@ export function parseMapsLink(value: string) {
 
   try {
     const url = new URL(value);
-    const query = url.searchParams.get("query") ?? url.searchParams.get("q");
+    const query = url.searchParams.get("query") ?? url.searchParams.get("q") ?? url.searchParams.get("ll") ?? url.searchParams.get("center");
     if (query) return parseCoordinatePair(query);
   } catch {
     return parseCoordinatePair(decoded);

@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/common/states";
 import { MeetingPointCard, type MeetingPointCardData } from "@/components/meeting-points/meeting-point-card";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
+import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type { MeetingPointStatus } from "@/types/domain";
 
 export default async function PointsPage() {
@@ -19,7 +20,7 @@ export default async function PointsPage() {
       .is("deleted_at", null)
       .order("updated_at", { ascending: false });
 
-    points = (data ?? []).map((point) => ({
+    points = await Promise.all((data ?? []).map(async (point) => ({
       id: point.id,
       name: point.name,
       address: point.address,
@@ -27,8 +28,8 @@ export default async function PointsPage() {
       pendingTasks: 0,
       urgentTasks: 0,
       updatedBy: "Sistema",
-      imageUrl: point.main_image_url,
-    }));
+      imageUrl: await createSignedStorageUrl(point.main_image_url),
+    })));
   }
 
   return (

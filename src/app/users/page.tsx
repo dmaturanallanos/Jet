@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/common/states";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { CreateUserForm } from "./create-user-form";
+import { roleLabels, type ProfileRole } from "@/types/domain";
 
 export default async function UsersPage() {
   let users: { id: string; name: string; role: string; status: string }[] = [];
@@ -18,7 +19,7 @@ export default async function UsersPage() {
     users = (data ?? []).map((user) => ({
       id: user.id,
       name: user.display_name,
-      role: user.role === "admin" ? "Administrador" : "Operador",
+      role: roleLabels[user.role as ProfileRole] ?? user.role,
       status: user.status === "active" ? "Activo" : "Inactivo",
     }));
   }

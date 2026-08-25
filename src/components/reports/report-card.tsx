@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PriorityBadge } from "@/components/common/badges";
 import type { TaskPriority } from "@/types/domain";
 
@@ -24,6 +25,9 @@ export function ReportCard({ report }: { report: ReportCardData }) {
       <p className="mt-4 text-sm text-slate-500 dark:text-zinc-400">
         {report.pointName ?? "Sin Punto Jet"} · {report.author} · {new Date(report.createdAt).toLocaleString("es-CL")}
       </p>
+      <Link href={`/reports/${report.id}`} className="mt-4 inline-flex h-9 items-center rounded-lg border border-black/10 px-3 text-sm font-semibold dark:border-white/10">
+        Abrir reporte
+      </Link>
     </article>
   );
 }

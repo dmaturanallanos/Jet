@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCurrentProfile } from "@/lib/auth/current-profile";
+import { canManageOperations, getCurrentProfile } from "@/lib/auth/current-profile";
 import { createUserSchema } from "@/schemas/users";
 
 export type CreateUserState = {
@@ -13,8 +13,8 @@ export type CreateUserState = {
 export async function createUser(_state: CreateUserState, formData: FormData): Promise<CreateUserState> {
   const currentProfile = await getCurrentProfile();
 
-  if (!currentProfile || currentProfile.role !== "admin") {
-    return { error: "Solo un administrador puede crear usuarios." };
+  if (!currentProfile || !canManageOperations(currentProfile.role)) {
+    return { error: "Solo administradores o moderadores pueden crear usuarios." };
   }
 
   const parsed = createUserSchema.safeParse({

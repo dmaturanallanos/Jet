@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Camera, ClipboardPlus, FilePlus2, Navigation, Pencil } from "lucide-react";
 import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { AppShell } from "@/components/app/app-shell";
@@ -8,6 +9,7 @@ import { ReportCard, type ReportCardData } from "@/components/reports/report-car
 import { TaskCard, type TaskCardData } from "@/components/tasks/task-card";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
+import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type { MeetingPointStatus, TaskPriority, TaskStatus } from "@/types/domain";
 import { ImageUploadForm } from "./image-upload-form";
 
@@ -19,6 +21,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
     address: string;
     latitude: number | null;
     longitude: number | null;
+    mapsUrl: string | null;
     reference: string | null;
     description: string | null;
     status: MeetingPointStatus;
@@ -33,7 +36,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
     const supabase = await createClient();
     const { data } = await supabase
       .from("meeting_points")
-      .select("id, name, address, latitude, longitude, reference, description, status, updated_at, main_image_url")
+      .select("id, name, address, maps_url, latitude, longitude, reference, description, status, updated_at, main_image_url")
       .eq("id", id)
       .is("deleted_at", null)
       .maybeSingle();
@@ -43,6 +46,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
         id: data.id,
         name: data.name,
         address: data.address,
+        mapsUrl: data.maps_url,
         latitude: data.latitude === null ? null : Number(data.latitude),
         longitude: data.longitude === null ? null : Number(data.longitude),
         reference: data.reference,
@@ -50,7 +54,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
         status: data.status as MeetingPointStatus,
         updatedAt: data.updated_at,
         updatedBy: "Sistema",
-        imageUrl: data.main_image_url,
+        imageUrl: await createSignedStorageUrl(data.main_image_url),
       };
 
       const [{ data: dbTasks }, { data: dbReports }] = await Promise.all([
@@ -85,7 +89,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
   const hasCoordinates = point.latitude !== null && point.longitude !== null;
   const mapsUrl = hasCoordinates
     ? `https://www.google.com/maps/search/?api=1&query=${point.latitude},${point.longitude}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.address)}`;
+    : point.mapsUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.address)}`;
 
   return (
     <AppShell>
@@ -109,15 +113,17 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
             {point.description ? <p className="mt-5 text-sm leading-6 text-slate-600 dark:text-zinc-300">{point.description}</p> : null}
             <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
               <a href={mapsUrl} target="_blank" rel="noreferrer" className="Action"><Navigation className="size-4" />Abrir</a>
-              <button className="Action"><ClipboardPlus className="size-4" />Tarea</button>
-              <button className="Action"><FilePlus2 className="size-4" />Reporte</button>
-              <button className="Action"><Camera className="size-4" />Foto</button>
-              <button className="Action"><Pencil className="size-4" />Editar</button>
+              <Link href={`/tasks/new?pointId=${point.id}`} className="Action"><ClipboardPlus className="size-4" />Tarea</Link>
+              <Link href={`/reports/new?pointId=${point.id}`} className="Action"><FilePlus2 className="size-4" />Reporte</Link>
+              <a href="#imagenes" className="Action"><Camera className="size-4" />Foto</a>
+              <Link href={`/points/${point.id}/edit`} className="Action"><Pencil className="size-4" />Editar</Link>
             </div>
           </div>
         </section>
         <aside className="grid content-start gap-5">
-          <ImageUploadForm pointId={point.id} />
+          <div id="imagenes">
+            <ImageUploadForm pointId={point.id} />
+          </div>
           <section>
             <h2 className="mb-3 text-lg font-semibold">Tareas relacionadas</h2>
             <div className="grid gap-3">{tasks.length ? tasks.map((task) => <TaskCard key={task.id} task={task} />) : <EmptyState title="Sin tareas" description="Este punto aun no tiene tareas relacionadas." />}</div>

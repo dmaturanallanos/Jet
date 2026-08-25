@@ -4,7 +4,7 @@ export type CurrentProfile = {
   id: string;
   organization_id: string;
   display_name: string;
-  role: "admin" | "operator";
+  role: "admin" | "moderator" | "scout";
   status: "active" | "inactive";
 };
 
@@ -23,4 +23,8 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
     .maybeSingle();
 
   return data as CurrentProfile | null;
+}
+
+export function canManageOperations(role?: CurrentProfile["role"] | null) {
+  return role === "admin" || role === "moderator";
 }

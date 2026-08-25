@@ -1,6 +1,6 @@
 # Jet Scooter Operaciones
 
-PWA interna para gestionar Puntos Jet, tareas, reportes, fotografias y actividad diaria de Jet Scooter. El proyecto ya incluye una primera version navegable de todas las fases en modo DEMO y el paquete SQL para crear la base de datos en Supabase.
+PWA interna para gestionar Puntos Jet, tareas, turnos, reportes, fotografias y actividad diaria de Jet Scooter. El proyecto usa Supabase como base operativa real.
 
 ## Arquitectura
 
@@ -34,19 +34,19 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Supabase
 
-Migracion inicial:
+Migraciones:
 
 ```bash
 supabase db push
 ```
 
-Seed demo:
+No cargues seed demo en produccion. Si ya lo cargaste antes, limpia datos de ejemplo con:
 
-```bash
-supabase db reset
+```text
+supabase/cleanup_demo_data.sql
 ```
 
-La migracion crea `organizations`, `profiles`, `meeting_points`, imagenes, `tasks`, comentarios, `reports`, `activity_logs`, historial y `notifications`, ademas de enums, indices, triggers `updated_at`, bucket privado `jet-operations`, politicas RLS iniciales y funciones para actividad diaria por zona horaria.
+La migracion crea `organizations`, `profiles`, `meeting_points`, imagenes, `tasks`, turnos, comentarios, `reports`, `activity_logs`, historial y `notifications`, ademas de enums, indices, triggers `updated_at`, bucket privado `jet-operations`, politicas RLS y funciones para actividad diaria por zona horaria.
 
 Detalles: [supabase/README.md](supabase/README.md).
 
@@ -55,6 +55,14 @@ Tambien existe un archivo combinado para SQL Editor:
 ```text
 supabase/setup.sql
 ```
+
+Despues de ejecutar el setup por primera vez en una base que ya tenia el rol antiguo `operator`, ejecuta:
+
+```text
+supabase/finalize_roles.sql
+```
+
+Storage debe tener el bucket privado `jet-operations`. `setup.sql` lo crea con JPG, PNG y WEBP hasta 8 MB.
 
 ## Desarrollo
 
@@ -70,7 +78,10 @@ Rutas iniciales:
 - `/points`
 - `/points/[id]`
 - `/tasks`
+- `/tasks/[id]`
+- `/shifts`
 - `/reports`
+- `/reports/[id]`
 - `/reports/daily`
 - `/reports/daily/[date]`
 - `/users`
@@ -95,7 +106,9 @@ La PWA basica ya esta creada. El soporte offline avanzado queda preparado para I
 
 - RLS activo en todas las tablas operativas.
 - Aislamiento por `organization_id`.
-- Roles iniciales: `admin` y `operator`.
+- Roles operativos: `admin`, `moderator` y `scout`.
+- `admin` y `moderator` pueden crear usuarios, puntos, tareas, turnos y avisos de equipo.
+- `scout` puede ver operacion, recibir asignaciones y actualizar tareas propias.
 - Soft delete en entidades operativas relevantes.
 - Timestamps `timestamptz`.
 - Zona horaria organizacional inicial: `America/Santiago`.

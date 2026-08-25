@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AppShell } from "@/components/app/app-shell";
 import { PageHeader } from "@/components/app/page-header";
@@ -37,7 +38,7 @@ export default async function TasksPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Tareas" description="Crea, asigna, inicia, completa o cancela tareas operativas." action={<button className="inline-flex h-11 items-center rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-zinc-950"><Plus className="mr-2 size-4" />Crear tarea</button>} />
+      <PageHeader title="Tareas" description="Crea, asigna, inicia, completa o cancela tareas operativas." action={<Link href="/tasks/new" className="inline-flex h-11 items-center rounded-lg bg-[#16c8ff] px-4 text-sm font-semibold text-[#07111f]"><Plus className="mr-2 size-4" />Crear tarea</Link>} />
       <CreateTaskForm points={points} assignees={assignees} />
       <div className="mb-4 grid gap-3 md:grid-cols-5">
         {["Fecha", "Estado", "Prioridad", "Responsable", "Punto"].map((filter) => <select key={filter} className="h-11 rounded-lg border border-black/10 bg-white px-3 dark:border-white/10 dark:bg-white/5"><option>{filter}</option></select>)}
