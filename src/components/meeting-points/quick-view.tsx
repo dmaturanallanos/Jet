@@ -11,6 +11,7 @@ export type MeetingPointQuickViewData = {
   longitude: number;
   status: MeetingPointStatus;
   updatedBy: string;
+  targetScooters?: number | null;
   imageUrl?: string | null;
 };
 
@@ -29,7 +30,13 @@ export function MeetingPointQuickView({ point }: { point: MeetingPointQuickViewD
             <MeetingPointStatusBadge status={point.status} />
           </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">{point.address}</p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">Ultima actividad: {point.updatedBy}</p>
+          <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-zinc-500">
+            <span className="rounded-md bg-cyan-400/15 px-2 py-1 font-semibold text-cyan-700 dark:text-cyan-200">
+              {point.targetScooters ?? 0}
+            </span>
+            <span>Scooters objetivo</span>
+            <span className="col-span-2">Ultima actividad: {point.updatedBy}</span>
+          </div>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">

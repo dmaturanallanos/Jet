@@ -21,6 +21,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
     address: string;
     latitude: number | null;
     longitude: number | null;
+    targetScooters: number | null;
     mapsUrl: string | null;
     reference: string | null;
     description: string | null;
@@ -36,7 +37,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
     const supabase = await createClient();
     const { data } = await supabase
       .from("meeting_points")
-      .select("id, name, address, maps_url, latitude, longitude, reference, description, status, updated_at, main_image_url")
+      .select("id, name, address, maps_url, latitude, longitude, target_scooters, reference, description, status, updated_at, main_image_url")
       .eq("id", id)
       .is("deleted_at", null)
       .maybeSingle();
@@ -49,6 +50,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
         mapsUrl: data.maps_url,
         latitude: data.latitude === null ? null : Number(data.latitude),
         longitude: data.longitude === null ? null : Number(data.longitude),
+        targetScooters: data.target_scooters,
         reference: data.reference,
         description: data.description,
         status: data.status as MeetingPointStatus,
@@ -107,6 +109,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <Info label="Referencia" value={point.reference ?? "Sin referencia"} />
               <Info label="Coordenadas" value={hasCoordinates ? `${point.latitude}, ${point.longitude}` : "Pendiente"} />
+              <Info label="Scooters objetivo" value={point.targetScooters === null ? "No definido" : String(point.targetScooters)} />
               <Info label="Ultima actualizacion" value={new Date(point.updatedAt).toLocaleString("es-CL")} />
               <Info label="Modificado por" value={point.updatedBy} />
             </div>

@@ -15,6 +15,7 @@ export default async function MapPage() {
     longitude: number;
     status: MeetingPointStatus;
     updatedBy: string;
+    targetScooters?: number | null;
     imageUrl?: string | null;
   }[] = [];
 
@@ -22,7 +23,7 @@ export default async function MapPage() {
     const supabase = await createClient();
     const { data } = await supabase
       .from("meeting_points")
-      .select("id, name, address, latitude, longitude, status, main_image_url")
+      .select("id, name, address, latitude, longitude, status, target_scooters, main_image_url")
       .is("deleted_at", null);
 
     points = (await Promise.all((data ?? []).map(async (point) => ({
@@ -33,6 +34,7 @@ export default async function MapPage() {
       longitude: Number(point.longitude),
       status: point.status as MeetingPointStatus,
       updatedBy: "Sistema",
+      targetScooters: point.target_scooters,
       imageUrl: await createSignedStorageUrl(point.main_image_url),
     })))).filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
   }

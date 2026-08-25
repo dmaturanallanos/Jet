@@ -7,6 +7,7 @@ export const meetingPointSchema = z.object({
   mapsLink: z.string().trim().optional().or(z.literal("")),
   latitude: z.coerce.number().min(-90).max(90).optional().or(z.literal("")),
   longitude: z.coerce.number().min(-180).max(180).optional().or(z.literal("")),
+  targetScooters: z.coerce.number().int().min(0, "No puede ser negativo.").max(200, "Revisa la cantidad de scooters.").optional().or(z.literal("")),
   reference: z.string().trim().max(240).optional().or(z.literal("")),
   description: z.string().trim().max(1200).optional().or(z.literal("")),
   status: z.enum(meetingPointStatuses),

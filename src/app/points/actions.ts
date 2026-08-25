@@ -24,6 +24,7 @@ export async function createMeetingPoint(_state: PointFormState, formData: FormD
     mapsLink: locationInput.mapsLink,
     latitude: formData.get("latitude") || undefined,
     longitude: formData.get("longitude") || undefined,
+    targetScooters: formData.get("targetScooters") || undefined,
     reference: formData.get("reference"),
     description: formData.get("description"),
     status: formData.get("status"),
@@ -37,6 +38,7 @@ export async function createMeetingPoint(_state: PointFormState, formData: FormD
   const mapsCoords = parsed.data.mapsLink ? parseMapsLink(parsed.data.mapsLink) : null;
   const latitude = parsed.data.latitude === "" || parsed.data.latitude === undefined ? mapsCoords?.latitude ?? null : Number(parsed.data.latitude);
   const longitude = parsed.data.longitude === "" || parsed.data.longitude === undefined ? mapsCoords?.longitude ?? null : Number(parsed.data.longitude);
+  const targetScooters = parsed.data.targetScooters === "" || parsed.data.targetScooters === undefined ? null : Number(parsed.data.targetScooters);
 
   const supabase = await createClient();
   const slugBase = slugify(parsed.data.name);
@@ -52,6 +54,7 @@ export async function createMeetingPoint(_state: PointFormState, formData: FormD
       maps_url: parsed.data.mapsLink || null,
       latitude,
       longitude,
+      target_scooters: targetScooters,
       reference: parsed.data.reference || null,
       description: parsed.data.description || null,
       status: parsed.data.status,
@@ -99,6 +102,7 @@ export async function updateMeetingPoint(_state: PointFormState, formData: FormD
     mapsLink: locationInput.mapsLink,
     latitude: formData.get("latitude") || undefined,
     longitude: formData.get("longitude") || undefined,
+    targetScooters: formData.get("targetScooters") || undefined,
     reference: formData.get("reference"),
     description: formData.get("description"),
     status: formData.get("status"),
@@ -112,6 +116,7 @@ export async function updateMeetingPoint(_state: PointFormState, formData: FormD
   const mapsCoords = parsed.data.mapsLink ? parseMapsLink(parsed.data.mapsLink) : null;
   const latitude = parsed.data.latitude === "" || parsed.data.latitude === undefined ? mapsCoords?.latitude ?? null : Number(parsed.data.latitude);
   const longitude = parsed.data.longitude === "" || parsed.data.longitude === undefined ? mapsCoords?.longitude ?? null : Number(parsed.data.longitude);
+  const targetScooters = parsed.data.targetScooters === "" || parsed.data.targetScooters === undefined ? null : Number(parsed.data.targetScooters);
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -122,6 +127,7 @@ export async function updateMeetingPoint(_state: PointFormState, formData: FormD
       maps_url: parsed.data.mapsLink || null,
       latitude,
       longitude,
+      target_scooters: targetScooters,
       reference: parsed.data.reference || null,
       description: parsed.data.description || null,
       status: parsed.data.status,

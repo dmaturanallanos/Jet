@@ -46,6 +46,10 @@ export function PointForm() {
             Longitud
             <input name="longitude" inputMode="decimal" className="Input" placeholder="-70.585200" />
           </label>
+          <label className="grid gap-1 text-sm font-medium text-slate-700 dark:text-zinc-300">
+            Scooters objetivo
+            <input name="targetScooters" type="number" min="0" max="200" inputMode="numeric" className="Input" placeholder="12" />
+          </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700 dark:text-zinc-300 md:col-span-2">
             Referencia
             <input name="reference" className="Input" placeholder="Salida principal, estacionamiento, acceso norte..." />

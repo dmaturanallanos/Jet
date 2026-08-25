@@ -44,6 +44,7 @@ export default async function DashboardPage() {
     longitude: number;
     status: MeetingPointStatus;
     updatedBy: string;
+    targetScooters?: number | null;
     imageUrl?: string | null;
   } | null = null;
 
@@ -70,7 +71,7 @@ export default async function DashboardPage() {
       supabase.rpc("get_daily_summary", { target_date: today }).maybeSingle(),
       supabase.from("tasks").select("id, title, description, priority, status, due_date").in("status", ["pending", "in_progress"]).order("due_date", { ascending: true }).limit(3),
       supabase.from("activity_logs").select("id, title, description, created_at").order("created_at", { ascending: false }).limit(5),
-      supabase.from("meeting_points").select("id, name, address, latitude, longitude, status, main_image_url").is("deleted_at", null).order("updated_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("meeting_points").select("id, name, address, latitude, longitude, status, target_scooters, main_image_url").is("deleted_at", null).order("updated_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
 
     if (summary) {
@@ -113,6 +114,7 @@ export default async function DashboardPage() {
         longitude: Number(point.longitude),
         status: point.status as MeetingPointStatus,
         updatedBy: "Sistema",
+        targetScooters: point.target_scooters,
         imageUrl: await createSignedStorageUrl(point.main_image_url),
       };
     }

@@ -12,6 +12,7 @@ type EditPoint = {
   maps_url: string | null;
   latitude: number | null;
   longitude: number | null;
+  target_scooters: number | null;
   reference: string | null;
   description: string | null;
   status: MeetingPointStatus;
@@ -38,6 +39,7 @@ export function EditPointForm({ point }: { point: EditPoint }) {
         <input name="mapsLink" defaultValue={point.maps_url ?? ""} className="Input md:col-span-2" placeholder="Link de Google Maps" />
         <input name="latitude" defaultValue={point.latitude ?? ""} className="Input" placeholder="Latitud" />
         <input name="longitude" defaultValue={point.longitude ?? ""} className="Input" placeholder="Longitud" />
+        <input name="targetScooters" type="number" min="0" max="200" defaultValue={point.target_scooters ?? ""} className="Input" placeholder="Scooters objetivo" />
         <input name="reference" defaultValue={point.reference ?? ""} className="Input md:col-span-2" placeholder="Referencia" />
         <textarea name="description" defaultValue={point.description ?? ""} className="Input min-h-28 md:col-span-2" placeholder="Descripcion" />
         <textarea name="internalNotes" defaultValue={point.internal_notes ?? ""} className="Input min-h-28 md:col-span-2" placeholder="Notas internas" />

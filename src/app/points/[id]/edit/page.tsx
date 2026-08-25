@@ -9,7 +9,7 @@ export default async function EditPointPage({ params }: { params: Promise<{ id: 
   const supabase = await createClient();
   const { data: point } = await supabase
     .from("meeting_points")
-    .select("id, name, address, maps_url, latitude, longitude, reference, description, status, internal_notes")
+    .select("id, name, address, maps_url, latitude, longitude, target_scooters, reference, description, status, internal_notes")
     .eq("id", id)
     .maybeSingle();
 

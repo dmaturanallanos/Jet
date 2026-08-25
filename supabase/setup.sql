@@ -77,6 +77,7 @@ create table if not exists public.meeting_points (
   maps_url text,
   latitude numeric(9,6) check (latitude >= -90 and latitude <= 90),
   longitude numeric(9,6) check (longitude >= -180 and longitude <= 180),
+  target_scooters integer check (target_scooters >= 0 and target_scooters <= 200),
   reference text,
   description text,
   status public.meeting_point_status not null default 'review',
@@ -92,6 +93,16 @@ create table if not exists public.meeting_points (
 
 alter table public.meeting_points
   add column if not exists maps_url text;
+
+alter table public.meeting_points
+  add column if not exists target_scooters integer;
+
+alter table public.meeting_points
+  drop constraint if exists meeting_points_target_scooters_range;
+
+alter table public.meeting_points
+  add constraint meeting_points_target_scooters_range
+  check (target_scooters is null or (target_scooters >= 0 and target_scooters <= 200));
 
 alter table public.meeting_points
   alter column latitude drop not null,
