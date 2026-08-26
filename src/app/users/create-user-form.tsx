@@ -15,7 +15,7 @@ export function CreateUserForm() {
         <input name="firstName" required placeholder="Nombre" className="Input" />
         <input name="lastName" required placeholder="Apellido" className="Input" />
         <input name="email" required type="email" placeholder="correo@jetscooter.cl" className="Input" />
-        <input name="password" required type="password" minLength={8} placeholder="Contrasena inicial" className="Input" />
+        <input name="password" required type="password" minLength={8} placeholder="Contrasena" className="Input" />
         <input name="phone" placeholder="Telefono" className="Input" />
         <select name="role" required defaultValue="scout" className="Input">
           <option value="scout">Scout</option>

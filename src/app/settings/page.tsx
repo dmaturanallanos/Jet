@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/app/theme-toggle";
 export default function SettingsPage() {
   return (
     <AppShell>
-      <PageHeader title="Configuracion" description="Preferencias base, enlaces de administracion y arquitectura futura." />
+      <PageHeader title="Configuracion" description="Preferencias y accesos de administracion." />
       <div className="grid gap-4 md:grid-cols-2">
         <section className="rounded-lg border border-black/10 bg-white p-4 dark:border-white/10 dark:bg-white/[0.04]">
           <h2 className="font-semibold">Tema</h2>

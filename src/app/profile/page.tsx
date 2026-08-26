@@ -21,7 +21,7 @@ export default async function ProfilePage() {
       <section className="rounded-lg border border-black/10 bg-white p-4 dark:border-white/10 dark:bg-white/[0.04]">
         <div className="grid size-16 place-items-center rounded-lg bg-cyan-300 text-2xl font-black text-zinc-950">J</div>
         <h2 className="mt-4 text-lg font-semibold">{profile?.display_name ?? "Usuario Jet"}</h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">{user?.email ?? "Sesion conectada a Supabase Auth"}</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">{user?.email ?? "Correo no disponible"}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="inline-flex items-center rounded-full bg-cyan-400/15 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-200">
             <ShieldCheck className="mr-2 size-4" />

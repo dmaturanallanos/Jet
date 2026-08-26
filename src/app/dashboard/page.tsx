@@ -126,9 +126,6 @@ export default async function DashboardPage() {
         <div>
           <p className="text-sm font-medium text-cyan-300">{appConfig.name}</p>
           <h1 className="mt-2 text-3xl font-semibold">Que esta ocurriendo hoy</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-            Fase 1 activa: arquitectura, autenticacion base, modelo de datos y seguridad inicial.
-          </p>
         </div>
         <DailySummary stats={stats} />
         <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">

@@ -47,7 +47,7 @@ export default async function UsersPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Usuarios" description="Profiles vinculados 1:1 a Supabase Auth. No se duplica la autenticacion." />
+      <PageHeader title="Usuarios" description="Gestiona informacion, permisos y estado del equipo." />
       <div className="mb-5">
         <CreateUserForm />
       </div>
@@ -81,7 +81,7 @@ export default async function UsersPage() {
             )}
           </div>
         ))}
-      </div> : <EmptyState title="No hay usuarios operativos" description="Crea el primer perfil admin y luego administra operadores desde esta pantalla." />}
+      </div> : <EmptyState title="No hay usuarios operativos" description="Crea usuarios para comenzar a coordinar el equipo." />}
     </AppShell>
   );
 }

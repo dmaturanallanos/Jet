@@ -78,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div>
               <p className="text-xs font-semibold uppercase text-cyan-700 dark:text-cyan-300">Jet Ops</p>
               <p className="text-sm font-medium text-slate-600 dark:text-zinc-400">
-                Gestion operativa conectada a Supabase
+                Gestion operativa
               </p>
             </div>
             <div className="flex items-center gap-2">

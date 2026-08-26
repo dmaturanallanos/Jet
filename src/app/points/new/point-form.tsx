@@ -68,7 +68,7 @@ export function PointForm() {
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="flex items-center gap-2 font-semibold">
           <Upload className="size-4 text-cyan-500" />
-          Imagen referencial inicial
+          Imagen referencial
         </h2>
         <input name="image" type="file" accept="image/jpeg,image/png,image/webp" className="mt-4 block w-full text-sm" />
       </section>
