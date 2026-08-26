@@ -9,3 +9,9 @@ export const createUserSchema = z.object({
   role: z.enum(profileRoles),
   phone: z.string().trim().optional().or(z.literal("")),
 });
+
+export const updateUserPermissionsSchema = z.object({
+  userId: z.string().uuid("Usuario invalido."),
+  role: z.enum(profileRoles),
+  status: z.enum(["active", "inactive"]),
+});

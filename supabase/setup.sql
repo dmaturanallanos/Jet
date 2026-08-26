@@ -57,6 +57,7 @@ create table if not exists public.organizations (
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   organization_id uuid not null references public.organizations(id) on delete restrict,
+  email text,
   first_name text not null,
   last_name text not null,
   display_name text not null,
@@ -90,6 +91,15 @@ create table if not exists public.meeting_points (
   deleted_at timestamptz,
   unique (organization_id, slug)
 );
+
+alter table public.profiles
+  add column if not exists email text;
+
+update public.profiles p
+set email = u.email
+from auth.users u
+where p.id = u.id
+  and p.email is null;
 
 alter table public.meeting_points
   add column if not exists maps_url text;

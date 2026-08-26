@@ -9,9 +9,11 @@ import {
   MoreHorizontal,
   Settings,
   CalendarDays,
+  LogOut,
   User,
   Users,
 } from "lucide-react";
+import { signOut } from "@/app/auth/actions";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { NotificationsBell } from "@/components/notifications/notifications-bell";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
@@ -90,6 +92,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <User className="size-4" />
               </Link>
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  aria-label="Cerrar sesion"
+                  className="grid size-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-red-300 hover:text-red-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-red-400/50 dark:hover:text-red-200"
+                >
+                  <LogOut className="size-4" />
+                </button>
+              </form>
             </div>
           </div>
         </header>

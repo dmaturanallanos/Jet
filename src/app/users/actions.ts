@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canManageOperations, getCurrentProfile } from "@/lib/auth/current-profile";
-import { createUserSchema } from "@/schemas/users";
+import { createClient } from "@/lib/supabase/server";
+import { createUserSchema, updateUserPermissionsSchema } from "@/schemas/users";
 
 export type CreateUserState = {
   message?: string;
@@ -56,6 +57,7 @@ export async function createUser(_state: CreateUserState, formData: FormData): P
   const { error: profileError } = await admin.from("profiles").insert({
     id: data.user.id,
     organization_id: currentProfile.organization_id,
+    email: parsed.data.email,
     first_name: parsed.data.firstName,
     last_name: parsed.data.lastName,
     display_name: displayName,
@@ -70,4 +72,44 @@ export async function createUser(_state: CreateUserState, formData: FormData): P
 
   revalidatePath("/users");
   return { message: `Usuario ${displayName} creado correctamente.` };
+}
+
+export async function updateUserPermissions(formData: FormData) {
+  const currentProfile = await getCurrentProfile();
+
+  if (!currentProfile || currentProfile.role !== "admin") {
+    return;
+  }
+
+  const parsed = updateUserPermissionsSchema.safeParse({
+    userId: formData.get("userId"),
+    role: formData.get("role"),
+    status: formData.get("status"),
+  });
+
+  if (!parsed.success) return;
+  if (parsed.data.userId === currentProfile.id && parsed.data.role !== "admin") return;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      role: parsed.data.role,
+      status: parsed.data.status,
+    })
+    .eq("id", parsed.data.userId)
+    .eq("organization_id", currentProfile.organization_id);
+
+  if (error) return;
+
+  try {
+    const admin = createAdminClient();
+    await admin.auth.admin.updateUserById(parsed.data.userId, {
+      user_metadata: { role: parsed.data.role },
+    });
+  } catch {
+    // The app reads permissions from profiles, so Auth metadata sync is optional.
+  }
+
+  revalidatePath("/users");
 }
