@@ -15,7 +15,7 @@ export default async function ReportsPage() {
     const supabase = await createClient();
     const { data } = await supabase
       .from("reports")
-      .select("id, title, description, importance, created_at")
+      .select("id, title, description, importance, created_at, report_type, report_date")
       .order("created_at", { ascending: false });
 
     reports = (data ?? []).map((report) => ({
@@ -24,8 +24,10 @@ export default async function ReportsPage() {
       description: report.description,
       importance: (report.importance ?? "medium") as TaskPriority,
       createdAt: report.created_at,
-      author: "Usuario",
+      author: report.report_type === "automatic" ? "Sistema" : "Usuario",
       pointName: null,
+      type: report.report_type as "manual" | "automatic",
+      reportDate: report.report_date,
     }));
   }
 

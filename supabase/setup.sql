@@ -188,6 +188,9 @@ create table if not exists public.reports (
   description text not null,
   observations text,
   importance public.task_priority,
+  report_type text not null default 'manual',
+  report_date date,
+  summary jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -242,6 +245,18 @@ create table if not exists public.notifications (
   created_at timestamptz not null default now(),
   read_at timestamptz
 );
+
+alter table public.reports
+  add column if not exists report_type text not null default 'manual',
+  add column if not exists report_date date,
+  add column if not exists summary jsonb;
+
+alter table public.reports
+  drop constraint if exists reports_type_check;
+
+alter table public.reports
+  add constraint reports_type_check
+  check (report_type in ('manual', 'automatic'));
 
 create table if not exists public.shifts (
   id uuid primary key default gen_random_uuid(),
@@ -364,7 +379,7 @@ create policy "members can read reports" on public.reports for select using (org
 drop policy if exists "members can insert reports" on public.reports;
 create policy "members can insert reports" on public.reports for insert with check (organization_id = public.current_organization_id() and user_id = auth.uid());
 drop policy if exists "admins can update reports" on public.reports;
-create policy "admins can update reports" on public.reports for update using (organization_id = public.current_organization_id() and public.is_admin()) with check (organization_id = public.current_organization_id() and public.is_admin());
+create policy "admins can update reports" on public.reports for update using (organization_id = public.current_organization_id() and public.can_manage_operations()) with check (organization_id = public.current_organization_id() and public.can_manage_operations());
 drop policy if exists "members can read report images" on public.report_images;
 create policy "members can read report images" on public.report_images for select using (organization_id = public.current_organization_id());
 drop policy if exists "members can insert report images" on public.report_images;
@@ -401,6 +416,7 @@ create index if not exists tasks_priority_due_date_idx on public.tasks(priority,
 create index if not exists task_comments_task_idx on public.task_comments(task_id) where deleted_at is null;
 create index if not exists reports_organization_created_at_idx on public.reports(organization_id, created_at desc);
 create index if not exists reports_meeting_point_idx on public.reports(meeting_point_id);
+create unique index if not exists reports_one_automatic_per_day_idx on public.reports(organization_id, report_date) where report_type = 'automatic';
 create index if not exists activity_logs_organization_created_at_idx on public.activity_logs(organization_id, created_at desc);
 create index if not exists activity_logs_meeting_point_idx on public.activity_logs(meeting_point_id);
 create index if not exists activity_logs_task_idx on public.activity_logs(task_id);

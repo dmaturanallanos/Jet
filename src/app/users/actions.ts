@@ -83,6 +83,10 @@ export async function updateUserPermissions(formData: FormData) {
 
   const parsed = updateUserPermissionsSchema.safeParse({
     userId: formData.get("userId"),
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
     role: formData.get("role"),
     status: formData.get("status"),
   });
@@ -90,10 +94,16 @@ export async function updateUserPermissions(formData: FormData) {
   if (!parsed.success) return;
   if (parsed.data.userId === currentProfile.id && parsed.data.role !== "admin") return;
 
+  const displayName = `${parsed.data.firstName} ${parsed.data.lastName}`;
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
     .update({
+      first_name: parsed.data.firstName,
+      last_name: parsed.data.lastName,
+      display_name: displayName,
+      email: parsed.data.email || null,
+      phone: parsed.data.phone || null,
       role: parsed.data.role,
       status: parsed.data.status,
     })
@@ -104,9 +114,15 @@ export async function updateUserPermissions(formData: FormData) {
 
   try {
     const admin = createAdminClient();
-    await admin.auth.admin.updateUserById(parsed.data.userId, {
-      user_metadata: { role: parsed.data.role },
-    });
+    const authUpdates: { email?: string; user_metadata: { role: string; first_name: string; last_name: string } } = {
+      user_metadata: {
+        role: parsed.data.role,
+        first_name: parsed.data.firstName,
+        last_name: parsed.data.lastName,
+      },
+    };
+    if (parsed.data.email) authUpdates.email = parsed.data.email;
+    await admin.auth.admin.updateUserById(parsed.data.userId, authUpdates);
   } catch {
     // The app reads permissions from profiles, so Auth metadata sync is optional.
   }

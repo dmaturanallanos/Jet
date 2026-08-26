@@ -10,6 +10,8 @@ export type ReportCardData = {
   author: string;
   importance: TaskPriority;
   createdAt: string;
+  type?: "manual" | "automatic";
+  reportDate?: string | null;
 };
 
 export function ReportCard({ report }: { report: ReportCardData }) {
@@ -23,7 +25,7 @@ export function ReportCard({ report }: { report: ReportCardData }) {
         <PriorityBadge priority={report.importance} />
       </div>
       <p className="mt-4 text-sm text-slate-500 dark:text-zinc-400">
-        {report.pointName ?? "Sin Punto Jet"} · {report.author} · {new Date(report.createdAt).toLocaleString("es-CL")}
+        {report.type === "automatic" ? `Automatico ${report.reportDate ?? ""}` : report.pointName ?? "Sin Punto Jet"} - {report.author} - {new Date(report.createdAt).toLocaleString("es-CL")}
       </p>
       <Link href={`/reports/${report.id}`} className="mt-4 inline-flex h-9 items-center rounded-lg border border-black/10 px-3 text-sm font-semibold dark:border-white/10">
         Abrir reporte
