@@ -10,6 +10,7 @@ export type MeetingPointCardData = {
   status: MeetingPointStatus;
   pendingTasks: number;
   urgentTasks: number;
+  targetScooters?: number | null;
   updatedBy: string;
   imageUrl?: string | null;
 };
@@ -32,7 +33,8 @@ export function MeetingPointCard({ point }: { point: MeetingPointCardData }) {
           </div>
           <MeetingPointStatusBadge status={point.status} />
         </div>
-        <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="grid gap-2 text-sm sm:grid-cols-3">
+          <span className="rounded-lg bg-slate-100 p-2 dark:bg-white/5">{point.targetScooters ?? 0} scooters objetivo</span>
           <span className="rounded-lg bg-slate-100 p-2 dark:bg-white/5">{point.pendingTasks} pendientes</span>
           <span className="rounded-lg bg-slate-100 p-2 dark:bg-white/5">{point.urgentTasks} urgentes</span>
         </div>

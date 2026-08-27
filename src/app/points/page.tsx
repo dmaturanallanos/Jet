@@ -16,9 +16,27 @@ export default async function PointsPage() {
     const supabase = await createClient();
     const { data } = await supabase
       .from("meeting_points")
-      .select("id, name, address, status, main_image_url, updated_at")
+      .select("id, name, address, status, target_scooters, main_image_url, updated_at")
       .is("deleted_at", null)
       .order("updated_at", { ascending: false });
+
+    const pointIds = (data ?? []).map((point) => point.id);
+    const { data: images } = pointIds.length
+      ? await supabase
+          .from("meeting_point_images")
+          .select("meeting_point_id, storage_path, is_primary, created_at")
+          .in("meeting_point_id", pointIds)
+          .is("deleted_at", null)
+          .order("is_primary", { ascending: false })
+          .order("created_at", { ascending: false })
+      : { data: [] };
+    const fallbackImages = new Map<string, string>();
+
+    for (const image of images ?? []) {
+      if (!fallbackImages.has(image.meeting_point_id)) {
+        fallbackImages.set(image.meeting_point_id, image.storage_path);
+      }
+    }
 
     points = await Promise.all((data ?? []).map(async (point) => ({
       id: point.id,
@@ -27,8 +45,9 @@ export default async function PointsPage() {
       status: point.status as MeetingPointStatus,
       pendingTasks: 0,
       urgentTasks: 0,
+      targetScooters: point.target_scooters,
       updatedBy: "Sistema",
-      imageUrl: await createSignedStorageUrl(point.main_image_url),
+      imageUrl: await createSignedStorageUrl(point.main_image_url ?? fallbackImages.get(point.id)),
     })));
   }
 
