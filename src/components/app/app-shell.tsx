@@ -6,7 +6,6 @@ import {
   Home,
   Map,
   MapPin,
-  MoreHorizontal,
   Settings,
   CalendarDays,
   LogOut,
@@ -30,7 +29,7 @@ const primaryNav = [
   { href: "/settings", label: "Config", icon: Settings },
 ];
 
-const mobileNav = primaryNav.slice(0, 4).concat([{ href: "/settings", label: "Mas", icon: MoreHorizontal }]);
+const mobileNav = primaryNav;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -108,14 +107,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="px-4 py-5 pb-24 sm:px-6 lg:px-8">{children}</main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-2 py-2 shadow-[0_-8px_28px_rgb(15_23_42/0.08)] backdrop-blur dark:border-white/10 dark:bg-[#07111f]/95 lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex gap-1 overflow-x-auto border-t border-slate-200 bg-white/95 px-2 py-2 shadow-[0_-8px_28px_rgb(15_23_42/0.08)] backdrop-blur dark:border-white/10 dark:bg-[#07111f]/95 lg:hidden">
         {mobileNav.map((item) => {
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="grid justify-items-center gap-1 rounded-lg px-1 py-2 text-xs font-semibold text-slate-600 transition hover:bg-cyan-50 hover:text-slate-950 dark:text-zinc-300 dark:hover:bg-cyan-300/10"
+                className="grid min-w-16 justify-items-center gap-1 rounded-lg px-2 py-2 text-xs font-semibold text-slate-600 transition hover:bg-cyan-50 hover:text-slate-950 dark:text-zinc-300 dark:hover:bg-cyan-300/10"
             >
               <Icon className="size-5 text-cyan-600 dark:text-cyan-300" />
               {item.label}
