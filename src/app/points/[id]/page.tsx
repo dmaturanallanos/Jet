@@ -69,7 +69,6 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
           .select("id, storage_path, is_primary, created_at")
           .eq("meeting_point_id", data.id)
           .is("deleted_at", null)
-          .order("is_primary", { ascending: false })
           .order("created_at", { ascending: false }),
       ]);
 
@@ -106,7 +105,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
         };
       }))).filter((image): image is PointCarouselImage => image !== null);
 
-      if (!point.imageUrl && images[0]) {
+      if (images[0]) {
         point.imageUrl = images[0].url;
       }
     }

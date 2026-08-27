@@ -24,10 +24,9 @@ export default async function PointsPage() {
     const { data: images } = pointIds.length
       ? await supabase
           .from("meeting_point_images")
-          .select("meeting_point_id, storage_path, is_primary, created_at")
+          .select("meeting_point_id, storage_path, created_at")
           .in("meeting_point_id", pointIds)
           .is("deleted_at", null)
-          .order("is_primary", { ascending: false })
           .order("created_at", { ascending: false })
       : { data: [] };
     const fallbackImages = new Map<string, string>();
@@ -47,7 +46,7 @@ export default async function PointsPage() {
       urgentTasks: 0,
       targetScooters: point.target_scooters,
       updatedBy: "Sistema",
-      imageUrl: await createSignedStorageUrl(point.main_image_url ?? fallbackImages.get(point.id)),
+      imageUrl: await createSignedStorageUrl(fallbackImages.get(point.id) ?? point.main_image_url),
     })));
   }
 

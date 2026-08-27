@@ -106,6 +106,15 @@ export default async function DashboardPage() {
     }));
 
     if (point) {
+      const { data: image } = await supabase
+        .from("meeting_point_images")
+        .select("storage_path")
+        .eq("meeting_point_id", point.id)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
       quickPoint = {
         id: point.id,
         name: point.name,
@@ -115,7 +124,7 @@ export default async function DashboardPage() {
         status: point.status as MeetingPointStatus,
         updatedBy: "Sistema",
         targetScooters: point.target_scooters,
-        imageUrl: await createSignedStorageUrl(point.main_image_url),
+        imageUrl: await createSignedStorageUrl(image?.storage_path ?? point.main_image_url),
       };
     }
   }
