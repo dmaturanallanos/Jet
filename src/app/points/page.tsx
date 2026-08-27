@@ -56,7 +56,7 @@ export default async function PointsPage() {
       <PageHeader
         title="Puntos Jet"
         description="Gestiona ubicaciones operativas, estado, tareas pendientes y ultima actividad."
-        action={<Link href="/points/new" className="inline-flex h-11 items-center rounded-lg bg-[#16c8ff] px-4 text-sm font-semibold text-[#07111f] shadow-sm transition hover:bg-cyan-300"><Plus className="mr-2 size-4" />Agregar Punto</Link>}
+        action={<Link href="/points/new" className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#16c8ff] px-4 text-sm font-semibold text-[#07111f] shadow-sm transition hover:bg-cyan-300 sm:w-auto"><Plus className="mr-2 size-4" />Agregar Punto</Link>}
       />
       <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_180px]">
         <input className="h-11 rounded-lg border border-black/10 bg-white px-3 dark:border-white/10 dark:bg-white/5" placeholder="Buscar por nombre, direccion o referencia" />

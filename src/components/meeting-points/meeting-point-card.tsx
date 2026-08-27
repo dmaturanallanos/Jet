@@ -17,17 +17,17 @@ export type MeetingPointCardData = {
 
 export function MeetingPointCard({ point }: { point: MeetingPointCardData }) {
   return (
-    <article className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <article className="min-w-0 overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div
         className="aspect-[16/9] bg-slate-200 bg-cover bg-center dark:bg-zinc-800"
         style={point.imageUrl ? { backgroundImage: `url(${point.imageUrl})` } : undefined}
       />
       <div className="grid gap-3 p-4">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="font-semibold">{point.name}</h2>
-            <p className="mt-1 flex items-center text-sm text-slate-500 dark:text-zinc-400">
-              <MapPin className="mr-1 size-4" />
+          <div className="min-w-0">
+            <h2 className="break-words font-semibold">{point.name}</h2>
+            <p className="mt-1 flex min-w-0 items-start text-sm text-slate-500 dark:text-zinc-400">
+              <MapPin className="mr-1 mt-0.5 size-4 shrink-0" />
               {point.address}
             </p>
           </div>

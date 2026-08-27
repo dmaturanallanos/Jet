@@ -25,10 +25,10 @@ export function InstallPrompt() {
     <button
       type="button"
       onClick={() => event.prompt()}
-      className="inline-flex h-10 items-center rounded-lg bg-[#16c8ff] px-3 text-sm font-semibold text-[#07111f] shadow-sm transition hover:bg-cyan-300"
+      className="inline-flex h-10 shrink-0 items-center rounded-lg bg-[#16c8ff] px-3 text-sm font-semibold text-[#07111f] shadow-sm transition hover:bg-cyan-300"
     >
-      <Download className="mr-2 size-4" />
-      Instalar aplicacion
+      <Download className="size-4 sm:mr-2" />
+      <span className="hidden sm:inline">Instalar aplicacion</span>
     </button>
   );
 }

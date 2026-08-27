@@ -33,7 +33,7 @@ const mobileNav = primaryNav;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-[#f4f7fb] text-slate-950 dark:bg-[#07111f] dark:text-white">
+    <div className="min-h-dvh overflow-x-hidden bg-[#f4f7fb] text-slate-950 dark:bg-[#07111f] dark:text-white">
       <OnlineIndicator />
 
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-white px-4 py-5 shadow-sm dark:border-white/10 dark:bg-[#0a1728] lg:block">
@@ -73,14 +73,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-[#07111f]/90">
-          <div className="flex items-center justify-between gap-3">
-            <div>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase text-cyan-700 dark:text-cyan-300">Jet Ops</p>
-              <p className="text-sm font-medium text-slate-600 dark:text-zinc-400">
+              <p className="truncate text-sm font-medium text-slate-600 dark:text-zinc-400">
                 Gestion operativa
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex max-w-full items-center gap-2 overflow-x-auto pb-1 sm:overflow-visible sm:pb-0">
               <InstallPrompt />
               <NotificationsBell />
               <ThemeToggle />
@@ -104,7 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="px-4 py-5 pb-24 sm:px-6 lg:px-8">{children}</main>
+        <main className="min-w-0 overflow-x-hidden px-4 py-5 pb-24 sm:px-6 lg:px-8">{children}</main>
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 flex gap-1 overflow-x-auto border-t border-slate-200 bg-white/95 px-2 py-2 shadow-[0_-8px_28px_rgb(15_23_42/0.08)] backdrop-blur dark:border-white/10 dark:bg-[#07111f]/95 lg:hidden">
