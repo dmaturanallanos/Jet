@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type { MeetingPointStatus, TaskPriority, TaskStatus } from "@/types/domain";
 import { ImageUploadForm } from "./image-upload-form";
+import { PointImagesCarousel, type PointCarouselImage } from "./point-images-carousel";
 
 export default async function PointDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,6 +33,7 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
   } | null = null;
   let tasks: TaskCardData[] = [];
   let reports: ReportCardData[] = [];
+  let images: PointCarouselImage[] = [];
 
   if (hasSupabaseEnv()) {
     const supabase = await createClient();
@@ -59,9 +61,16 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
         imageUrl: await createSignedStorageUrl(data.main_image_url),
       };
 
-      const [{ data: dbTasks }, { data: dbReports }] = await Promise.all([
+      const [{ data: dbTasks }, { data: dbReports }, { data: dbImages }] = await Promise.all([
         supabase.from("tasks").select("id, title, description, priority, status, due_date").eq("meeting_point_id", data.id).order("created_at", { ascending: false }),
         supabase.from("reports").select("id, title, description, importance, created_at").eq("meeting_point_id", data.id).order("created_at", { ascending: false }),
+        supabase
+          .from("meeting_point_images")
+          .select("id, storage_path, is_primary, created_at")
+          .eq("meeting_point_id", data.id)
+          .is("deleted_at", null)
+          .order("is_primary", { ascending: false })
+          .order("created_at", { ascending: false }),
       ]);
 
       tasks = (dbTasks ?? []).map((task) => ({
@@ -84,6 +93,18 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
         author: "Usuario",
         pointName: data.name,
       }));
+
+      images = (await Promise.all((dbImages ?? []).map(async (image) => {
+        const url = await createSignedStorageUrl(image.storage_path);
+        if (!url) return null;
+
+        return {
+          id: image.id,
+          url,
+          isPrimary: image.is_primary,
+          createdAt: image.created_at,
+        };
+      }))).filter((image): image is PointCarouselImage => image !== null);
     }
   }
 
@@ -127,6 +148,14 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
           <div id="imagenes">
             <ImageUploadForm pointId={point.id} />
           </div>
+          <section>
+            <h2 className="mb-3 text-lg font-semibold">Imagenes referenciales</h2>
+            {images.length ? (
+              <PointImagesCarousel images={images} />
+            ) : (
+              <EmptyState title="Sin imagenes" description="Agrega fotos referenciales para reconocer mejor este punto." />
+            )}
+          </section>
           <section>
             <h2 className="mb-3 text-lg font-semibold">Tareas relacionadas</h2>
             <div className="grid gap-3">{tasks.length ? tasks.map((task) => <TaskCard key={task.id} task={task} />) : <EmptyState title="Sin tareas" description="Este punto aun no tiene tareas relacionadas." />}</div>

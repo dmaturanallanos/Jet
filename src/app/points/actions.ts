@@ -162,8 +162,22 @@ export async function uploadReferenceImage(_state: PointFormState, formData: For
   const pointId = String(formData.get("pointId") ?? "");
   if (!pointId) return { error: "Punto no encontrado." };
 
-  const result = await uploadPointImage(formData.get("image"), pointId, profile.organization_id, profile.id, false);
-  if (result?.error) return result;
+  const supabase = await createClient();
+  const { data: point } = await supabase
+    .from("meeting_points")
+    .select("main_image_url")
+    .eq("id", pointId)
+    .eq("organization_id", profile.organization_id)
+    .maybeSingle();
+
+  const values = formData.getAll("images").length ? formData.getAll("images") : [formData.get("image")];
+  const files = values.filter((value): value is File => value instanceof File && value.size > 0);
+  if (!files.length) return { error: "Selecciona al menos una imagen." };
+
+  for (const [index, file] of files.entries()) {
+    const result = await uploadPointImage(file, pointId, profile.organization_id, profile.id, !point?.main_image_url && index === 0);
+    if (result?.error) return result;
+  }
 
   revalidatePath(`/points/${pointId}`);
   return {};
