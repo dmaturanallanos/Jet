@@ -105,6 +105,10 @@ export default async function PointDetailPage({ params }: { params: Promise<{ id
           createdAt: image.created_at,
         };
       }))).filter((image): image is PointCarouselImage => image !== null);
+
+      if (!point.imageUrl && images[0]) {
+        point.imageUrl = images[0].url;
+      }
     }
   }
 

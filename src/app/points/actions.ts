@@ -222,7 +222,11 @@ async function uploadPointImage(
   if (imageError) return { error: imageError.message };
 
   if (primary) {
-    await supabase.from("meeting_points").update({ main_image_url: storagePath, updated_by: userId }).eq("id", pointId);
+    await supabase
+      .from("meeting_points")
+      .update({ main_image_url: storagePath, updated_by: userId })
+      .eq("id", pointId)
+      .eq("organization_id", organizationId);
   }
 
   await supabase.from("activity_logs").insert({
