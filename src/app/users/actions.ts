@@ -50,6 +50,11 @@ export async function createUser(_state: CreateUserState, formData: FormData): P
   });
 
   if (error || !data.user) {
+    const message = error?.message?.toLowerCase() ?? "";
+    if (message.includes("not allowed") || message.includes("jwt")) {
+      return { error: "Configura SUPABASE_SERVICE_ROLE_KEY con la key service_role real. La anon/publishable key no permite crear usuarios." };
+    }
+
     return { error: error?.message ?? "No fue posible crear el usuario." };
   }
 
